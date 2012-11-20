@@ -14,7 +14,7 @@
   `(with-meta
      (fn ~dependencies
        ~@body)
-     {:dependencies ~(set (map keyword dependencies))
+     {:dependencies ~(vec (map keyword dependencies))
       :fnc true}))
 
 (defn fnc?
@@ -66,4 +66,4 @@
   "Returns every dependency of the process component function that
    is not satisfied by the available-outputs map."
   [fnc available-outputs]
-  (set/difference (get-component-dependencies fnc) (set (keys available-outputs))))
+  (set/difference (set (get-component-dependencies fnc)) (set (keys available-outputs))))
