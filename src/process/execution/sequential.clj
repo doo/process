@@ -5,6 +5,13 @@
         [process.graph.traversal :only [level-order
                                         unique-sets]]))
 
+(defn sequential-execution-path [process-definition output]
+  (let [graph (build-process-graph process-definition)]
+    (->> (level-order graph output)
+         reverse
+         unique-sets
+         (apply concat))))
+
 (defn execute-sequential
   "Executes the given process up to the point where the given output is calculated. The
    execution of the process is done sequentially. The execution assumes that every
@@ -14,11 +21,7 @@
    output."
   [process-definition existing-outputs output]
   (check-for-missing-dependencies (merge process-definition existing-outputs))
-  (let [graph (build-process-graph process-definition)
-        execution-path (->> (level-order graph output)
-                            unique-sets
-                            (apply concat)
-                            reverse)]
+  (let [execution-path (sequential-execution-path process-definition output)]
     (reduce
      (fn [existing-outputs output]
        (if-not (get existing-outputs output)
