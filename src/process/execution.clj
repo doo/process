@@ -1,7 +1,8 @@
 (ns process.execution
   (:use [process.definition :only [get-component-dependencies
                                    get-missing-dependencies
-                                   missing-component-dependencies]])
+                                   missing-component-dependencies]]
+        [slingshot.slingshot :only [throw+]])
   (:require [clojure.set :as set]))
 
 (defn- check-component-dependencies
@@ -9,9 +10,9 @@
   [fnc available-outputs]
   (let [mcd (missing-component-dependencies fnc available-outputs)]
     (when-not (empty? mcd)
-      ;;TODO: replace with slingshot exception
-      (throw (Exception.
-              (str "Can not resolve dependencies for component: " mcd))))))
+      (throw+ {:type ::can-not-resolve-component-dependencies
+               :missing-component-dependencies mcd
+               :available-outputs-keys (keys available-outputs)}))))
 
 (defn invoke-fnc
   "Invokes a process component function. The value for the function
@@ -31,5 +32,5 @@
   [process-definition]
   (let [missing (get-missing-dependencies process-definition)]
     (when (seq missing)
-      ;;TODO: replace with slingshot exception
-      (throw (Exception. (str "Missing dependencies: " missing))))))
+      (throw+ {:type ::missing-dependencies
+               :missing-dependencies missing}))))
