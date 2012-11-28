@@ -5,23 +5,14 @@
         [process.graph.traversal :only [level-order
                                         unique-sets]]))
 
-(defn sequential-execution-path [process-definition output]
-  (let [graph (build-process-graph process-definition)]
-    (->> (level-order graph output)
-         reverse
-         unique-sets
-         (apply concat))))
+(defn sequential-execution-path [process-graph output]
+  (->> (level-order process-graph output)
+       reverse
+       unique-sets
+       (apply concat)))
 
-(defn execute-sequential
-  "Executes the given process up to the point where the given output is calculated. The
-   execution of the process is done sequentially. The execution assumes that every
-   output in the existing-outputs map has already been calculated. The function returns
-   a new map with the existing-outputs plus the calculated output and all outputs of
-   the dependencies that had to be calculated to execute the calculation of the given
-   output."
-  [process-definition existing-outputs output]
-  (check-for-missing-dependencies (merge process-definition existing-outputs))
-  (let [execution-path (sequential-execution-path process-definition output)]
+(defn- execute-sequential* [process-definition process-graph existing-outputs output]
+  (let [execution-path (sequential-execution-path process-graph output)]
     (reduce
      (fn [existing-outputs output]
        (if-not (get existing-outputs output)
@@ -32,3 +23,17 @@
                     component)))
          existing-outputs))
      existing-outputs execution-path)))
+
+(defn execute-sequential
+  "Executes the given process up to the point where the given output is calculated. The
+   execution of the process is done sequentially. The execution assumes that every
+   output in the existing-outputs map has already been calculated. The function returns
+   a new map with the existing-outputs plus the calculated output and all outputs of
+   the dependencies that had to be calculated to execute the calculation of the given
+   output."
+  [process-definition existing-outputs & outputs]
+  (check-for-missing-dependencies (merge process-definition existing-outputs))
+  (let [process-graph (build-process-graph process-definition)]
+    (reduce (fn [existing-outputs output]
+              (execute-sequential* process-definition process-graph existing-outputs output))
+            existing-outputs outputs)))
