@@ -75,28 +75,40 @@
         prepared-form
         (walk/postwalk
          (fn [x]
-           (if (symbol? x)
+           (if (and (symbol? x)
+                    (not (namespace x))
+                    (not (.contains (name x) ".")))
              (swap! symbols conj x)
              x)) form)]
     @symbols))
 
-(defn unknown-symbols [refers symbols]
-  (let [refers (set refers)
-        symbols (set symbols)]
-    (set/difference symbols refers)))
+(defn unknown-symbols [names symbols]
+  (set/difference (set symbols) (set names)))
 
 (defn- build-process-components
-  [refers bindings]
+  [names bindings]
   (->> bindings
        (partition 2)
-       (map (fn [[output form]]
-              [(keyword output)
-               (let [symbols (extract-symbols form)
-                     dependencies (vec (unknown-symbols refers symbols))]
-                 (if (list? form)
-                   (list 'process.definition/fnc dependencies
-                         form)
-                   form))]))
+       (reduce
+        (fn [result [output form]]
+          (assoc result
+            output
+            (let [symbols (extract-symbols form)
+                  existing-outputs (set (keys result))
+                  names (set/difference (set names) existing-outputs)
+                  dependencies (vec (unknown-symbols names symbols))
+                  missing-outputs (set/difference (set dependencies) existing-outputs)]
+              (when (seq missing-outputs)
+                (throw (Exception.
+                        (apply str
+                         "Unable to resolve symbols in this context: "
+                         (interpose ", " missing-outputs)))))
+              (if (list? form)
+                (list 'process.definition/fnc dependencies
+                      form)
+                form))))
+        {})
+       (map (fn [[k v]] [(keyword k) v]))
        (into {})))
 
 (defmacro process
@@ -114,6 +126,6 @@
 
   Destructuring is not supported at the moment."
   [bindings & {:keys [marker] :or {marker "$"}}]
-  (let [refers (concat (keys (ns-refers *ns*))
-                       (keys &env))]
-    (build-process-components refers bindings)))
+  (let [names (concat (keys (ns-map *ns*))
+                      (keys &env))]
+    (build-process-components names bindings)))
