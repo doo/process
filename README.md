@@ -17,14 +17,20 @@ for background information.
        :delta (fnc [alpha gamma] (+ alpha gamma))
        :epsilon (fnc [gamma delta] (+ gamma delta))})
  
+    > (execute-sequential process-definition {:alpha 1 :beta 2} :result)
+    {:result 14, :epsilon 7, :delta 4, :gamma 3, :alpha 1, :beta 2}
+
+There is also a short notation (still alpha) to define a process:
+
     (def process-definition
-      {:result (fnc [gamma delta epsilon] (+ gamma delta epsilon))
-       :gamma (fnc [alpha beta] (+ alpha beta))
-       :delta (fnc [alpha gamma] (+ alpha gamma))
-       :epsilon (fnc [gamma delta] (+ gamma delta))})
- 
-    > (execute-sequential process-definition inputs :result)
-    {:result 14 :epsilon 7 :delta 4 :gamma 3 :beta 2 :alpha 1}
+      (process
+       [result (+ gamma delta epsilon)
+        gamma (+ alpha beta)
+        delta (+ alpha gamma)
+        epsilon (+ gamma delta)]))
+
+    > (execute-sequential process-definition {:alpha 1 :beta 2} :result)
+    {:result 14, :epsilon 7, :delta 4, :gamma 3, :alpha 1, :beta 2}
 
 ## TODOs
 
