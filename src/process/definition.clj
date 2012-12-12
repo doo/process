@@ -69,18 +69,14 @@
   [fnc available-outputs]
   (set/difference (set (get-component-dependencies fnc)) (set (keys available-outputs))))
 
+(defn- relevant-symbol? [symbol]
+  (and (symbol? symbol)
+       (not (namespace symbol))
+       (not (.contains (name symbol) "."))))
+
 (defn- extract-symbols
   [form]
-  (let [symbols (atom [])
-        prepared-form
-        (walk/postwalk
-         (fn [x]
-           (if (and (symbol? x)
-                    (not (namespace x))
-                    (not (.contains (name x) ".")))
-             (swap! symbols conj x)
-             x)) form)]
-    @symbols))
+  (filter relevant-symbol? (distinct (filter (complement coll?) (tree-seq coll? seq form)))))
 
 (defn- unknown-symbols [names symbols]
   (set/difference (set symbols) (set names)))
