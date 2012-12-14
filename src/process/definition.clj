@@ -69,35 +69,48 @@
   [fnc available-outputs]
   (set/difference (set (get-component-dependencies fnc)) (set (keys available-outputs))))
 
+(defn- relevant-symbol? [symbol]
+  (and (symbol? symbol)
+       (not (namespace symbol))
+       (not (.contains (name symbol) "."))))
+
 (defn- extract-symbols
   [form]
-  (let [symbols (atom [])
-        prepared-form
-        (walk/postwalk
-         (fn [x]
-           (if (symbol? x)
-             (swap! symbols conj x)
-             x)) form)]
-    @symbols))
+  (filter relevant-symbol? (distinct (filter (complement coll?) (tree-seq coll? seq form)))))
 
-(defn unknown-symbols [refers symbols]
-  (let [refers (set refers)
-        symbols (set symbols)]
-    (set/difference symbols refers)))
+(defn- unknown-symbols [names symbols]
+  (set/difference (set symbols) (set names)))
+
+(defn- check-for-missing-dependencies [dependencies existing-outputs]
+  (let [missing-outputs (set/difference (set dependencies) (set existing-outputs))]
+    (when-not (empty? missing-outputs)
+      (throw
+       (Exception.
+        (apply str
+               "Unable to resolve symbols in this context: "
+               (interpose ", " missing-outputs)))))))
 
 (defn- build-process-components
-  [refers bindings]
-  (->> bindings
-       (partition 2)
-       (map (fn [[output form]]
-              [(keyword output)
-               (let [symbols (extract-symbols form)
-                     dependencies (vec (unknown-symbols refers symbols))]
-                 (if (list? form)
-                   (list 'process.definition/fnc dependencies
-                         form)
-                   form))]))
-       (into {})))
+  [names bindings]
+  (let [process-outputs (set (take-nth 2 bindings))]
+    (->> bindings
+         (partition 2)
+         (reduce
+          (fn [result [output form]]
+            (let [symbols (filter process-outputs (extract-symbols form))
+                  f (if (or (list? form) (not (empty? symbols)))
+                      (let [existing-outputs (set (keys result))
+                            names (set/difference (conj (set names) output)
+                                                  existing-outputs)
+                            dependencies (vec (unknown-symbols names symbols))]
+                        (check-for-missing-dependencies dependencies existing-outputs)
+                        (list 'process.definition/fnc dependencies
+                              form))
+                      form)]
+              (assoc result output f)))
+          {})
+         (map (fn [[k v]] [(keyword k) v]))
+         (into {}))))
 
 (defmacro process
   "Alpha - subject to change.
@@ -113,7 +126,7 @@
    :beta (process.definition/fnc [alpha] (+ alpha 1))}
 
   Destructuring is not supported at the moment."
-  [bindings & {:keys [marker] :or {marker "$"}}]
-  (let [refers (concat (keys (ns-refers *ns*))
-                       (keys &env))]
-    (build-process-components refers bindings)))
+  [bindings]
+  (let [names (concat (keys (ns-map *ns*))
+                      (keys &env))]
+    (build-process-components names bindings)))
