@@ -100,7 +100,8 @@
             (let [symbols (filter process-outputs (extract-symbols form))
                   f (if (or (list? form) (not (empty? symbols)))
                       (let [existing-outputs (set (keys result))
-                            names (set/difference (set names) existing-outputs)
+                            names (set/difference (conj (set names) output)
+                                                  existing-outputs)
                             dependencies (vec (unknown-symbols names symbols))]
                         (check-for-missing-dependencies dependencies existing-outputs)
                         (list 'process.definition/fnc dependencies
