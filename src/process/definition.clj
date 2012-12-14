@@ -125,7 +125,7 @@
    :beta (process.definition/fnc [alpha] (+ alpha 1))}
 
   Destructuring is not supported at the moment."
-  [bindings & {:keys [marker] :or {marker "$"}}]
+  [bindings]
   (let [names (concat (keys (ns-map *ns*))
                       (keys &env))]
     (build-process-components names bindings)))
