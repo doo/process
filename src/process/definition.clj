@@ -5,6 +5,14 @@
             [clojure.set :as set]
             [clojure.walk :as walk]))
 
+(defn with-dependencies
+  "Adds the dependencies of the given function to its metadata, so that it
+   can be used as component in a process definition."
+  [f dependencies]
+  (with-meta
+    f
+    {::dependencies (vec dependencies)}))
+
 (defmacro fnc
   "A component function can be used as a component in a process definition. It
    adds additional metadata to an ordinary function that is used by the
@@ -12,23 +20,22 @@
    process component. Every argument of a fnc is a dependency to the output
    of the corresponding process component in the process definition."
   [dependencies & body]
-  `(with-meta
+  `(with-dependencies
      (fn ~dependencies
        ~@body)
-     {:dependencies ~(vec (map keyword dependencies))
-      :fnc true}))
+     ~(vec (map keyword dependencies))))
 
 (defn fnc?
   "Checks if the given function is a process component function."
   [f]
-  (true? (:fnc (meta f))))
+  (vector? (::dependencies (meta f))))
 
 (defn get-component-dependencies
   "At the moment only functions are supported as process components. If
    the function is a process component function the dependencies are
    returned."
   [process-component]
-  (:dependencies (meta process-component)))
+  (::dependencies (meta process-component)))
 
 (defn get-inputs
   "Gets the inputs of a process graph. An input of a process is a component that
