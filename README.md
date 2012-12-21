@@ -47,6 +47,14 @@ library. One last point I like to mention is that this FCA really
 helps a lot to separate the pure functional parts of a process from
 the impure parts or rather steps with side effects.
 
+## Releases
+
+The latest release is 0.1.2
+
+[Leiningen](https://github.com/technomancy/leiningen) dependency information:
+
+    [net.doo/process "0.1.2"]
+
 ## Usage
 
 To define a step or rather component of a process you can use the
