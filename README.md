@@ -12,7 +12,7 @@ use this fine-grained, composable abstraction
 What it comes down to is, that you can compose different steps of a
 computation in a more flexible way than using a let for that
 purpose. In a real life system these computations or rather processes
-often involves a lot of steps. Normally you end up with a function
+often involve a lot of steps. Normally you end up with a function
 that contains a huge let statement (kind of a 'monster'-let) that
 composes all these steps. This construct is totally inflexible, if you
 like to do anything more than to execute this ball of mud. Especially,
@@ -31,8 +31,8 @@ declarative part of how the steps of a process depend on each other
 from the part of how the process is executed in the end. You could choose
 to just execute the steps of a process sequentially like a let
 statement or you can write an execution strategy that figures out which
-steps can be calculated in parallel. We at doo for example use process
-among other things to split up some complex event processing code
+steps can be calculated in parallel. Among other things we use the
+process library to split up some complex event processing code
 into simple steps. A lot of steps produces interim results that are
 needed by different computations to calculate their end result. By using
 process the interim results can easily be shared between the different
@@ -48,14 +48,14 @@ or rather steps with side effects.
 
 ## Usage
 
-To define a step or rather component of a process you can use the `fnc`
-macro that just adds a `:process.definition/dependencies` entry (a vector
-of keywords) to the metadata of the function object. So `(def f
-(fnc [alpha beta] (+ alpha beta)))` just states that the function
-`f` depends on two outputs named `alpha` and `beta` as inputs to do its
+To define a step or rather component of a process you can use the
+`fnc` macro that just adds a `:process.definition/dependencies` entry
+(a vector of keywords) to the metadata of the function. So `(def f
+(fnc [alpha beta] (+ alpha beta)))` just states that the function `f`
+depends on two outputs named `alpha` and `beta` as inputs to do its
 calculation. `alpha` or `beta` could either be an output of another
-process component or they can be inputs for the process itself. Here the
-example that is also used for the Flow library:
+process component or they can be inputs for the process itself. Here
+the example that is also used for the Flow library:
 
     (use 'process.definition)
 
@@ -82,14 +82,14 @@ component's dependencies are available when a component function is
 invoked. Through the second parameter of the `execute-sequential`
 function you define the 'existing' outputs of the process execution,
 here we just say that the outputs of `alpha` and `beta` are already
-calculated. The remaining arguments of the function defines which
-outputs you like to calculate here we just want to know what the
+calculated. The remaining arguments of the function define which
+outputs you like to calculate. Here we just want to know what the
 result is. However you could also only execute the process partially:
 
     > (execute-sequential process-definition {:alpha 1 :beta 2} :delta)
     {:delta 4, :gamma 3, :alpha 1, :beta 2}
 
-As you can see above only the outputs are caculated to perform the
+As you can see above only the outputs are calculated to perform the
 computation of the delta component. Furthermore you also can predefine
 the output of components:
 
@@ -115,13 +115,13 @@ the library (still alpha):
     > (execute-sequential process-definition {:alpha 1} :result)
     {:result 14, :epsilon 7, :delta 4, :gamma 3, :beta 2, :alpha 1}
 
-In comparision to our first process-definition this version has much
-less boilerplate code. The process macro needs to be aware of the
-inputs so that it can figure out if you mean a dependency our just a
+In comparison to our first process-definition this version has much
+less boilerplate code. The `process` macro needs to be aware of the
+inputs so that it can figure out if you mean a dependency or just a
 symbol from the context (a var defined in the current namespace or a
 binding in a surrounding let). Here we define `alpha` as nil while
-`beta` has a default value of `2`. Like any other component also
-`beta` can be predefined via the existing-outputs parameter of the
+`beta` has a default value of `2`. Like any other component `beta`
+can also be predefined via the existing-outputs parameter of the
 `execute-sequential` function.
 
 ## License
