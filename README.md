@@ -6,45 +6,46 @@ library. For that reason it also has a lot of goals in common with
 Stuart Sierra's [Flow](https://github.com/stuartsierra/flow) library.
 You should read Prismatic's [blog
 post](http://blog.getprismatic.com/blog/2012/10/1/prismatics-graph-at-strange-loop.html)
-about Graph to get an idea what benefits you can leverage if you
-use this fine-grained, composable abstraction
+about Graph to get an idea what benefits you can leverage if you use
+this fine-grained, composable abstraction
 ([FCA](http://blog.getprismatic.com/blog/2012/4/5/software-engineering-at-prismatic.html)).
+
 What it comes down to is, that you can compose different steps of a
 computation in a more flexible way than using a let for that
 purpose. In a real life system these computations or rather processes
-often involve a lot of steps. Normally you end up with a function
-that contains a huge let statement (kind of a 'monster'-let) that
-composes all these steps. This construct is totally inflexible, if you
-like to do anything more than to execute this ball of mud. Especially,
-if you have discovered a bug that is caused by some of the
-composed steps or maybe just by some missing data. Most often the fastest
-way is to add some `println` statements in between the steps of the
-'monster'-let to do some ad-hoc debugging. The FCA of the process
-library helps you to compose all these steps in a flexible way, so
-that you can access each and every interim result of the
-computation. It even allows you to evaluate the computation only up to
-a certain point or to predefine the output of a step. The latter is
-especially useful if the corresponding step represents a side effect
-that you like to "mock out". In terms of the simplicity notion you
-could say the FCA of the process library helps you to separate the
-declarative part of how the steps of a process depend on each other
-from the part of how the process is executed in the end. You could choose
-to just execute the steps of a process sequentially like a let
-statement or you can write an execution strategy that figures out which
-steps can be calculated in parallel. Among other things we use the
-process library to split up some complex event processing code
-into simple steps. A lot of steps produces interim results that are
-needed by different computations to calculate their end result. By using
-process the interim results can easily be shared between the different
-computations and the execution strategy can be adapted to higher
-performance demands independently from the actual implementation of
-the calculation. There are a whole lot of other benefits like
-transparently enhancing the execution of a process with performance
-monitoring stuff and so on, that are all described in the
-aforementioned blog post by Prismatic about their Graph library. One
-last point I like to mention is that this FCA really helps a lot to
-separate the pure functional parts of a process from the impure parts
-or rather steps with side effects.
+often involve a lot of steps. Normally you end up with a function that
+contains a huge let statement (kind of a 'monster'-let) that composes
+all these steps. This construct is totally inflexible, if you like to
+do anything more than to execute this ball of mud. Especially, if you
+have discovered a bug that is caused by some of the composed steps or
+maybe just by some missing data. Most often the fastest way is to add
+some `println` statements in between the steps of the 'monster'-let to
+do some ad-hoc debugging.  
+The FCA of the process library helps you to compose all these steps in
+a flexible way, so that you can access each and every interim result
+of the computation. It even allows you to evaluate the computation
+only up to a certain point or to predefine the output of a step. The
+latter is especially useful if the corresponding step represents a
+side effect that you like to "mock out". In terms of the simplicity
+notion you could say the FCA of the process library helps you to
+separate the declarative part of how the steps of a process depend on
+each other from the part of how the process is executed in the
+end. You could choose to just execute the steps of a process
+sequentially like a let statement or you can write an execution
+strategy that figures out which steps can be calculated in parallel.  
+Among other things we use the process library to split up some complex
+event processing code into simple steps. A lot of steps produces
+interim results that are needed by different computations to calculate
+their end result. By using process the interim results can easily be
+shared between the different computations and the execution strategy
+can be adapted to higher performance demands independently from the
+actual implementation of the calculation. There are a whole lot of
+other benefits like transparently enhancing the execution of a process
+with performance monitoring stuff and so on, that are all described in
+the aforementioned blog post by Prismatic about their Graph
+library. One last point I like to mention is that this FCA really
+helps a lot to separate the pure functional parts of a process from
+the impure parts or rather steps with side effects.
 
 ## Usage
 
