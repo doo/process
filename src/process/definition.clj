@@ -76,6 +76,20 @@
   [fnc available-outputs]
   (set/difference (set (get-component-dependencies fnc)) (set (keys available-outputs))))
 
+(defn select-outputs
+  "Returns a process definition that only contains the given outputs and their
+   dependencies. Thereby you can reuse some parts of an existing process
+   definition as a basis for a new process definition."
+  [process-definition outputseq]
+  (let [process-graph (build-process-graph process-definition)]
+    (->> outputs
+         (reduce (fn [nodes output]
+                   (set/union nodes
+                              #{output}
+                              (dep/transitive-dependencies process-graph output)))
+                 #{})
+         (select-keys process-definition))))
+
 (defn- relevant-symbol? [symbol]
   (and (symbol? symbol)
        (not (namespace symbol))
