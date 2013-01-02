@@ -82,7 +82,7 @@
    definition as a basis for a new process definition."
   [process-definition outputseq]
   (let [process-graph (build-process-graph process-definition)]
-    (->> outputs
+    (->> outputseq
          (reduce (fn [nodes output]
                    (set/union nodes
                               #{output}
