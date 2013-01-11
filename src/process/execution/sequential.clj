@@ -32,8 +32,6 @@
    the dependencies that had to be calculated to execute the calculation of the given
    output."
   [process-definition existing-outputs & outputs]
-  (check-for-missing-dependencies (merge process-definition existing-outputs))
+  (check-for-missing-dependencies process-definition existing-outputs outputs)
   (let [process-graph (build-process-graph process-definition)]
     (reduce (fn [existing-outputs output]
-              (execute-sequential* process-definition process-graph existing-outputs output))
-            existing-outputs outputs)))

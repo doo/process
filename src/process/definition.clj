@@ -50,10 +50,11 @@
 (defn get-missing-dependencies
   "Gets all components of a process definition that dependencies can not be fully
    satisfied."
-  [process-definition]
+  [process-definition outputs]
   (let [components (set (keys process-definition))
         dependencies (->> (filter fnc? (vals process-definition))
                           (mapcat get-component-dependencies)
+                          (concat outputs)
                           set)]
     (set/difference dependencies components)))
 
