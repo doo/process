@@ -35,3 +35,6 @@
   (check-for-missing-dependencies process-definition existing-outputs outputs)
   (let [process-graph (build-process-graph process-definition)]
     (reduce (fn [existing-outputs output]
+              (execute-sequential* process-definition process-graph existing-outputs output))
+            existing-outputs outputs)))
+
