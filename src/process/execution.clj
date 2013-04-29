@@ -29,8 +29,8 @@
 (defn check-for-missing-dependencies
   "Checks if all dependencies of a process definition are satisfied by the
    outputs of the process components."
-  [process-definition]
-  (let [missing (get-missing-dependencies process-definition)]
+  [process-definition existing-outputs outputs]
+  (let [missing (get-missing-dependencies (merge process-definition existing-outputs) outputs)]
     (when (seq missing)
       (throw+ {:type ::missing-dependencies
                :missing-dependencies missing}))))
