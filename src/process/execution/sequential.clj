@@ -15,7 +15,7 @@
   (let [execution-path (sequential-execution-path process-graph output)]
     (reduce
      (fn [existing-outputs output]
-       (if-not (get existing-outputs output)
+       (if-not (contains? existing-outputs output)
          (let [component (get process-definition output)]
            (assoc existing-outputs output
                   (if (fnc? component)
